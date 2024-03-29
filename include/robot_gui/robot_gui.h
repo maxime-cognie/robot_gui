@@ -19,7 +19,6 @@ private:
     ros::NodeHandle *nh_;
     ros::Subscriber robot_info_sub_;
     ros::Publisher cmd_vel_pub_;
-    ros::Subscriber cmv_vel_sub_;
     std::string robot_info_topic_;
     std::string cmd_vel_topic_;
     robotinfo_msgs::RobotInfo10Fields robot_info_;
