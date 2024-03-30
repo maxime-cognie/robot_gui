@@ -1,5 +1,4 @@
 #include "robot_gui/robot_gui.h"
-#include "std_srvs/Trigger.h"
 #include "tf/LinearMath/Quaternion.h"
 #include "tf/transform_datatypes.h"
 #include <cmath>
@@ -7,7 +6,8 @@
 RobotGui::RobotGui(ros::NodeHandle *nh, const std::string robot_info_topic,
                    const std::string cmd_vel_topic,
                    const std::string odom_topic,
-                   const std::string dist_track_srv) {
+                   const std::string dist_track_srv,
+                   const std::string reset_dist_srv) {
   this->nh_ = nh;
   this->robot_info_topic_ = robot_info_topic;
   this->cmd_vel_topic_ = cmd_vel_topic;
@@ -22,6 +22,8 @@ RobotGui::RobotGui(ros::NodeHandle *nh, const std::string robot_info_topic,
   this->cmd_vel_.angular.z = 0;
   this->dist_track_srv_ = dist_track_srv;
   this->dist_track_client_ = this->nh_->serviceClient<std_srvs::Trigger>(this->dist_track_srv_);
+  this->reset_dist_srv_ = reset_dist_srv;
+  this->reset_dist_client_ = this->nh_->serviceClient<std_srvs::Empty>(this->reset_dist_srv_);
 }
 
 void RobotGui::robotInfoCallback(
@@ -87,6 +89,7 @@ void RobotGui::run() {
   const int x_win_dist_track = x_dist_track + button_width + 20;
   const int dist_tack_win_width = 2 * mw_width / 3;
   const int dist_tack_win_height = button_height + 20;
+  const int dt_button_height = button_height / 2 - 10;
   
 
   // Init a OpenCV window and tell cvui to use it.
@@ -94,7 +97,8 @@ void RobotGui::run() {
   cvui::init(WINDOW_NAME);
 
   // initialize the server response message
-  this->dist_track_client_.call(trig_srv_);
+  this->reset_dist_client_.call(this->reset_srv_);
+  this->dist_track_client_.call(this->trig_srv_);
 
   while (ros::ok()) {
     // Clear the frame with a nice color
@@ -197,7 +201,11 @@ void RobotGui::run() {
 
     /*  ----------  Distance tracker client  ----------  */
     cvui::printf(frame, x_dist_track, y_dist_track, 0.4, grey, "Distance Travelled :");
-    if (cvui::button(frame, x_dist_track, y_dist_track + 20, button_width, button_height, "dist track")) {
+    if (cvui::button(frame, x_dist_track, y_dist_track + 20, button_width, dt_button_height, "CALL")) {
+        this->dist_track_client_.call(this->trig_srv_);
+    }
+    if (cvui::button(frame, x_dist_track, y_dist_track + dt_button_height + 30, button_width, dt_button_height, "RESET")) {
+        this->reset_dist_client_.call(this->reset_srv_);
         this->dist_track_client_.call(this->trig_srv_);
     }
     cvui::window(frame, x_win_dist_track, y_dist_track, dist_tack_win_width, dist_tack_win_height, "Distance (m) :");

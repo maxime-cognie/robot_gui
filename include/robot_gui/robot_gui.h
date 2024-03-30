@@ -7,6 +7,7 @@
 #include "robot_gui/cvui.h"
 #include "robotinfo_msgs/RobotInfo10Fields.h"
 #include "std_srvs/Trigger.h"
+#include "std_srvs/Empty.h"
 #include <opencv2/opencv.hpp>
 #include <ros/ros.h>
 
@@ -16,7 +17,8 @@ public:
            const std::string robot_info_topic = "robot_info",
            const std::string pub_vel_topic = "cmd_vel",
            const std::string odom_topic = "odom",
-           const std::string dist_track_srv = "get_distance");
+           const std::string dist_track_srv = "get_distance",
+           const std::string reset_dist_srv = "reset_distance");
   void run();
 
 private:
@@ -25,16 +27,19 @@ private:
   ros::Subscriber odom_sub_;
   ros::Publisher cmd_vel_pub_;
   ros::ServiceClient dist_track_client_;
+  ros::ServiceClient reset_dist_client_;
 
   std::string robot_info_topic_;
   std::string cmd_vel_topic_;
   std::string odom_topic_;
   std::string dist_track_srv_;
+  std::string reset_dist_srv_;
 
   robotinfo_msgs::RobotInfo10Fields robot_info_;
   geometry_msgs::Twist cmd_vel_;
   nav_msgs::Odometry rob_pos_;
   std_srvs::Trigger trig_srv_;
+  std_srvs::Empty reset_srv_;
   
   void robotInfoCallback(const robotinfo_msgs::RobotInfo10Fields::ConstPtr &msg);
   void odomCallback(const nav_msgs::Odometry::ConstPtr &msg);
